@@ -24,3 +24,6 @@ git commit -m "update: add new files"
 git push
 
 git pull origin main
+
+
+python inference.py --model_path ./phi2_output --query "Write a Fast Formula to calculate overtime pay based on hours worked?"
