@@ -62,7 +62,7 @@ python train_phi2.py \
 
 ```bash
 # Single query
-python inference.py --model_path ./phi2_output --query "公式写法是什么？"
+python inference.py --model_path ./phi2_output --query "Write a Fast Formula to calculate overtime pay based on hours worked？"
 
 # Interactive mode
 python inference.py --model_path ./phi2_output --interactive
