@@ -30,9 +30,8 @@ def generate_response(model, tokenizer, question, max_new_tokens=120, temperatur
             max_new_tokens=max_new_tokens,
             temperature=temperature,
             top_p=top_p,
-            repetition_penalty=1.2,
-            no_repeat_ngram_size=3,
-            do_sample=True,
+            repetition_penalty=1.3,
+            no_repeat_ngram_size=4,
             pad_token_id=tokenizer.eos_token_id
         )
     

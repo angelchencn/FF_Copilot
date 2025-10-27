@@ -197,7 +197,15 @@ def main():
         tokenizer.pad_token = tokenizer.eos_token
     
     # Add custom tokens for FastFormula domain
-    new_tokens = ["WEEKDAY", "PAY_RATE", "OVERTIME_PAY", "FAST_FORMULA"]
+    new_tokens = ["DEFAULT FOR", "IF", "THEN", "ELSIF", "ELSE", "RETURN",
+                    "HOURS_WORKED", "REGULAR_HOURS", "TOTAL_HOURS",
+                    "PAY_RATE", "HOURLY_RATE", "OVERTIME_RATE", "OVERTIME_HOURS", "OVERTIME_PAY",
+                    "GROSS_PAY", "BASE_SALARY", "TAXABLE_PAY", "BONUS_AMOUNT",
+                    "TAX_RATE", "ALLOWANCE_RATE", "DEDUCTION_RATE", "BONUS_PERCENT",
+                    "INPUT_VALUE", "THRESHOLD", "LIMIT", "AMOUNT",
+                    "MESSAGE", "RESULT", "VALUE", "FACTOR", "RATE",
+                    "WEEKDAY", "SUNDAY", "MONDAY",
+                    "### START", "### END", "FORMULA_BEGIN", "FORMULA_END"]
     tokenizer.add_tokens(new_tokens)
     print(f"Added custom tokens: {new_tokens}")
     print(f"Vocabulary size before: {len(tokenizer)}")
