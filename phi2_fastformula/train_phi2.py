@@ -21,7 +21,7 @@ from peft import LoraConfig, get_peft_model, TaskType
 def parse_args():
     parser = argparse.ArgumentParser(description="Fine-tune Phi-2 on FastFormula data")
     parser.add_argument("--model_name", type=str, default="microsoft/phi-2", help="Model name or path")
-    parser.add_argument("--data_path", type=str, default="../data/fastformula/input.txt", help="Path to training data")
+    parser.add_argument("--data_path", type=str, default="../data/fastformula", help="Path to training data (file or directory)")
     parser.add_argument("--output_dir", type=str, default="./phi2_fastformula_output", help="Output directory")
     parser.add_argument("--num_epochs", type=int, default=3, help="Number of training epochs")
     parser.add_argument("--batch_size", type=int, default=4, help="Batch size per device")
@@ -64,11 +64,65 @@ def preprocess_function(examples, tokenizer, max_length=1024):
     return tokenized
 
 
-def parse_qa_data(file_path):
-    """Parse the Q&A format from the input file (supports JSONL format)"""
+def parse_jsonl_file(file_path):
+    """Parse a single JSONL file (supports both 'prompt/completion' and 'instruction/output' formats)"""
     import json
     
     qa_pairs = []
+    with open(file_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                data = json.loads(line)
+                # Support multiple field name formats
+                if 'prompt' in data and 'completion' in data:
+                    qa_pairs.append({'user': data['prompt'], 'assistant': data['completion']})
+                elif 'instruction' in data and 'output' in data:
+                    qa_pairs.append({'user': data['instruction'], 'assistant': data['output']})
+                elif 'user' in data and 'assistant' in data:
+                    qa_pairs.append({'user': data['user'], 'assistant': data['assistant']})
+            except json.JSONDecodeError:
+                continue
+    
+    return qa_pairs
+
+
+def parse_qa_data(data_path):
+    """Parse Q&A data from file or directory (supports JSONL format)"""
+    import json
+    import os
+    from pathlib import Path
+    
+    qa_pairs = []
+    
+    # Check if path is a directory or file
+    if os.path.isdir(data_path):
+        # Load all JSONL files in the directory
+        print(f"Loading JSONL files from directory: {data_path}")
+        jsonl_files = []
+        for file in os.listdir(data_path):
+            if file.endswith('.jsonl'):
+                jsonl_files.append(os.path.join(data_path, file))
+        
+        if not jsonl_files:
+            raise ValueError(f"No JSONL files found in {data_path}")
+        
+        print(f"Found {len(jsonl_files)} JSONL files: {jsonl_files}")
+        
+        # Load all files
+        for file_path in jsonl_files:
+            print(f"Loading: {file_path}")
+            pairs = parse_jsonl_file(file_path)
+            qa_pairs.extend(pairs)
+            print(f"  - Loaded {len(pairs)} Q&A pairs")
+        
+        return qa_pairs
+    
+    # Otherwise, treat as single file
+    file_path = data_path
+    print(f"Loading data from file: {file_path}")
     
     # Check if file is JSONL format
     with open(file_path, 'r', encoding='utf-8') as f:
@@ -85,8 +139,13 @@ def parse_qa_data(file_path):
                     continue
                 try:
                     data = json.loads(line)
+                    # Support multiple field name formats
                     if 'prompt' in data and 'completion' in data:
                         qa_pairs.append({'user': data['prompt'], 'assistant': data['completion']})
+                    elif 'instruction' in data and 'output' in data:
+                        qa_pairs.append({'user': data['instruction'], 'assistant': data['output']})
+                    elif 'user' in data and 'assistant' in data:
+                        qa_pairs.append({'user': data['user'], 'assistant': data['assistant']})
                 except json.JSONDecodeError:
                     continue
             return qa_pairs
