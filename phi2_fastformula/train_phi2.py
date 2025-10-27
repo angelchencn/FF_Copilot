@@ -196,6 +196,12 @@ def main():
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     
+    # Add custom tokens for FastFormula domain
+    new_tokens = ["WEEKDAY", "PAY_RATE", "OVERTIME_PAY", "FAST_FORMULA"]
+    tokenizer.add_tokens(new_tokens)
+    print(f"Added custom tokens: {new_tokens}")
+    print(f"Vocabulary size before: {len(tokenizer)}")
+    
     # Load model
     model = AutoModelForCausalLM.from_pretrained(
         args.model_name,
@@ -203,6 +209,11 @@ def main():
         trust_remote_code=True,
         device_map="auto"
     )
+    
+    # Resize token embeddings to accommodate new tokens
+    model.resize_token_embeddings(len(tokenizer))
+    print(f"Vocabulary size after: {len(tokenizer)}")
+    print(f"Model embedding layer resized to accommodate new tokens")
     
     print(f"Model loaded: {model.config}")
     print(f"Total parameters: {sum(p.numel() for p in model.parameters()):,}")

@@ -15,7 +15,7 @@ def format_prompt(question):
     return f"用户: {question}\n\n助手:"
 
 
-def generate_response(model, tokenizer, question, max_new_tokens=120, temperature=0.8, top_p=0.9):
+def generate_response(model, tokenizer, question, max_new_tokens=120, temperature=0.3, top_p=0.9):
     """Generate a response from the model"""
     # Format the prompt
     prompt = format_prompt(question)
