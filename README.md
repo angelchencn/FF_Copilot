@@ -1,6 +1,6 @@
 # FF_Copilot
 
-https://github.com/angelchencn/FF_Copilot.git
+git clone https://github.com/angelchencn/FF_Copilot.git
 
 https://console.runpod.io/pods
 
