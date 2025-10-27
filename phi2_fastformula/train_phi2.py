@@ -315,14 +315,15 @@ def main():
         save_steps=args.save_steps,
         eval_steps=args.eval_steps,
         eval_strategy="steps",  # Changed from evaluation_strategy
-        save_total_limit=3,
+        save_total_limit=2,
+        save_optimizer=False,
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
         greater_is_better=False,
         fp16=fp16,
         bf16=bf16,
         report_to="none",  # Can change to "wandb" or "tensorboard" if desired
-        save_safetensors=False,
+        save_safetensors=True,
     )
     
     # Create trainer
