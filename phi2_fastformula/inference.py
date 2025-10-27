@@ -61,11 +61,11 @@ def main():
     
     # Load model and tokenizer
     print(f"\nLoading model from: {args.model_path}")
-    tokenizer = AutoTokenizer.from_pretrained(args.model_path, local_files_only=True)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_path, local_files_only=True, trust_remote_code=False, use_fast=False)
     model = AutoModelForCausalLM.from_pretrained(
         args.model_path, local_files_only=True,
         torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
-        trust_remote_code=True,
+        trust_remote_code=false,
         device_map="auto"
     )
     
