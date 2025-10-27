@@ -22,3 +22,5 @@ git config --global user.email "angelchencn@gmail.com"
 git config --global user.name "angelchencn"
 git commit -m "update: add new files"
 git push
+
+git pull origin main
