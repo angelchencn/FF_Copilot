@@ -46,7 +46,7 @@ Make sure your training data is at `../data/fastformula/input.txt` in the correc
 python train_phi2.py --use_lora
 
 # Full fine-tuning
-python train_phi2.py --output_dir ./phi2_full_output
+
 
 # Custom configuration
 python train_phi2.py \
