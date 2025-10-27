@@ -220,7 +220,9 @@ def main():
         tokenizer=tokenizer,
         mlm=False,  # We're doing causal LM, not masked LM
     )
-    
+    fp16 = torch.cuda.is_available() and not torch.cuda.is_bf16_supported()
+    bf16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
+
     # Training arguments
     training_args = TrainingArguments(
         output_dir=args.output_dir,
@@ -239,8 +241,8 @@ def main():
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
         greater_is_better=False,
-        fp16=torch.cuda.is_available(),
-        bf16=torch.cuda.is_available() and torch.cuda.is_bf16_supported(),
+        fp16=fp16,
+        bf16=bf16,
         report_to="none",  # Can change to "wandb" or "tensorboard" if desired
         save_safetensors=False,
     )
