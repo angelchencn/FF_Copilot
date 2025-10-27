@@ -65,11 +65,38 @@ def preprocess_function(examples, tokenizer, max_length=1024):
 
 
 def parse_qa_data(file_path):
-    """Parse the Q&A format from the input file"""
+    """Parse the Q&A format from the input file (supports JSONL format)"""
+    import json
+    
+    qa_pairs = []
+    
+    # Check if file is JSONL format
+    with open(file_path, 'r', encoding='utf-8') as f:
+        first_line = f.readline().strip()
+        
+        # Try to parse as JSONL
+        try:
+            json.loads(first_line)
+            # File is JSONL format
+            f.seek(0)  # Reset to beginning
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    data = json.loads(line)
+                    if 'prompt' in data and 'completion' in data:
+                        qa_pairs.append({'user': data['prompt'], 'assistant': data['completion']})
+                except json.JSONDecodeError:
+                    continue
+            return qa_pairs
+        except json.JSONDecodeError:
+            pass
+    
+    # Fallback to old format parsing (User: / Assistant:)
     with open(file_path, 'r', encoding='utf-8') as f:
         content = f.read()
     
-    qa_pairs = []
     lines = content.split('\n')
     
     current_q = None
@@ -77,14 +104,16 @@ def parse_qa_data(file_path):
     
     for line in lines:
         line = line.strip()
-        if line.startswith('用户:'):
+        if line.startswith('User:') or line.startswith('用户:'):
+            prefix = 'User:' if line.startswith('User:') else '用户:'
             # Save previous Q&A if exists
             if current_q and current_a:
                 qa_pairs.append({'user': current_q, 'assistant': current_a})
-            current_q = line[3:].strip()  # Remove '用户:' prefix
+            current_q = line[len(prefix):].strip()
             current_a = None
-        elif line.startswith('助手:') and current_q:
-            current_a = line[3:].strip()  # Remove '助手:' prefix
+        elif (line.startswith('Assistant:') or line.startswith('助手:')) and current_q:
+            prefix = 'Assistant:' if line.startswith('Assistant:') else '助手:'
+            current_a = line[len(prefix):].strip()
     
     # Don't forget the last pair
     if current_q and current_a:
