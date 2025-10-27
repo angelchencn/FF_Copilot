@@ -15,7 +15,7 @@ def format_prompt(question):
     return f"用户: {question}\n\n助手:"
 
 
-def generate_response(model, tokenizer, question, max_new_tokens=512, temperature=0.7, top_p=0.9):
+def generate_response(model, tokenizer, question, max_new_tokens=120, temperature=0.8, top_p=0.9):
     """Generate a response from the model"""
     # Format the prompt
     prompt = format_prompt(question)
@@ -30,6 +30,8 @@ def generate_response(model, tokenizer, question, max_new_tokens=512, temperatur
             max_new_tokens=max_new_tokens,
             temperature=temperature,
             top_p=top_p,
+            repetition_penalty=1.2,
+            no_repeat_ngram_size=3,
             do_sample=True,
             pad_token_id=tokenizer.eos_token_id
         )
