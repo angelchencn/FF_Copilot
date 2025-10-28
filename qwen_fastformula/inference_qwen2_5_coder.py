@@ -74,13 +74,21 @@ def main():
         base_model_path = peft_config.base_model_name_or_path
         
         print(f"Loading base model from: {base_model_path}")
-        tokenizer = AutoTokenizer.from_pretrained(base_model_path, trust_remote_code=True)
+        
+        # Load tokenizer from the adapter path (which has the correct vocab size)
+        tokenizer = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True)
+        
+        # Load base model
         model = AutoModelForCausalLM.from_pretrained(
             base_model_path,
             torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
             trust_remote_code=True,
             device_map="auto",
         )
+        
+        # Resize model embeddings to match the tokenizer used during training
+        print(f"Resizing model embeddings from {model.config.vocab_size} to {len(tokenizer)}")
+        model.resize_token_embeddings(len(tokenizer))
         
         print(f"Loading adapter from: {args.model_path}")
         model = PeftModel.from_pretrained(model, args.model_path)
