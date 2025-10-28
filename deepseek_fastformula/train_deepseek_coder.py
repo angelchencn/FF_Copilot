@@ -199,7 +199,11 @@ def main():
         device_map="auto"
     )
 
-    # Setup LoRA BEFORE resizing embeddings
+    # Resize token embeddings FIRST to accommodate new tokens
+    print(f"Resizing token embeddings from {model.config.vocab_size} to {len(tokenizer)}")
+    model.resize_token_embeddings(len(tokenizer))
+
+    # Setup LoRA AFTER resizing embeddings
     if args.use_lora:
         print(f"\nSetting up LoRA with r={args.lora_r}, alpha={args.lora_alpha}")
         lora_config = LoraConfig(
@@ -209,16 +213,17 @@ def main():
             bias="none",
             task_type=TaskType.CAUSAL_LM,
             lora_dropout=0.05,
+            modules_to_save=["embed_tokens", "lm_head"],  # 添加这个参数来训练新的 embeddings
         )
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
+    else:
+        # If not using LoRA, make sure the model is in training mode
+        model.train()
 
-    # Resize token embeddings to accommodate new tokens (after LoRA setup)
-    model.resize_token_embeddings(len(tokenizer))
-    print(f"Model embedding layer resized to accommodate new tokens")
-
-    print(f"Model loaded: {model.config if not args.use_lora else model.base_model.config}")
+    print(f"Model loaded successfully")
     print(f"Total parameters: {sum(p.numel() for p in model.parameters()):,}")
+    print(f"Trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad):,}")
 
     # Prepare dataset
     print(f"\nLoading and preprocessing data from: {args.data_path}")
