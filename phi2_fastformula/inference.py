@@ -2,7 +2,7 @@
 Inference script for fine-tuned Phi-2 model on FastFormula data.
 
 Usage:
-    python inference.py --model_path ./phi2_output --query "公式写法是什么？"
+    python inference.py --model_path ./phi2_output --query "What is the formula syntax?"
 """
 
 import argparse
@@ -12,7 +12,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 def format_prompt(question):
     """Format the question for the model"""
-    return f"用户: {question}\n\n助手:"
+    return f"User: {question}\n\nAssistant:"
 
 
 def generate_response(model, tokenizer, question, max_new_tokens=120, temperature=0.3, top_p=0.9):
@@ -39,8 +39,8 @@ def generate_response(model, tokenizer, question, max_new_tokens=120, temperatur
     response = tokenizer.decode(outputs[0], skip_special_tokens=True)
     
     # Extract only the assistant's response
-    if "助手:" in response:
-        response = response.split("助手:")[-1].strip()
+    if "Assistant:" in response:
+        response = response.split("Assistant:")[-1].strip()
     
     return response
 
@@ -48,7 +48,7 @@ def generate_response(model, tokenizer, question, max_new_tokens=120, temperatur
 def main():
     parser = argparse.ArgumentParser(description="Inference with fine-tuned Phi-2 model")
     parser.add_argument("--model_path", type=str, required=True, help="Path to fine-tuned model")
-    parser.add_argument("--query", type=str, default="公式写法是什么？", help="Question to ask")
+    parser.add_argument("--query", type=str, default="What is the formula syntax?", help="Question to ask")
     parser.add_argument("--max_tokens", type=int, default=512, help="Maximum tokens to generate")
     parser.add_argument("--temperature", type=float, default=0.7, help="Sampling temperature")
     parser.add_argument("--interactive", action="store_true", help="Interactive mode")
@@ -61,11 +61,11 @@ def main():
     
     # Load model and tokenizer
     print(f"\nLoading model from: {args.model_path}")
-    tokenizer = AutoTokenizer.from_pretrained(args.model_path, local_files_only=True, trust_remote_code=False, use_fast=False)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True)
     model = AutoModelForCausalLM.from_pretrained(
-        args.model_path, local_files_only=True,
+        args.model_path,
         torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
-        trust_remote_code=false,
+        trust_remote_code=True,
         device_map="auto"
     )
     
@@ -81,11 +81,11 @@ def main():
         print("-" * 60)
         
         while True:
-            question = input("\n用户: ")
+            question = input("\nUser: ")
             if question.lower() in ['quit', 'exit', 'q']:
                 break
             
-            print("\n助手: ", end="")
+            print("\nAssistant: ", end="", flush=True)
             response = generate_response(
                 model, tokenizer, question,
                 max_new_tokens=args.max_tokens,
