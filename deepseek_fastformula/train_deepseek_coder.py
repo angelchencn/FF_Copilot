@@ -199,14 +199,7 @@ def main():
         device_map="auto"
     )
 
-    # Resize token embeddings to accommodate new tokens
-    model.resize_token_embeddings(len(tokenizer))
-    print(f"Model embedding layer resized to accommodate new tokens")
-
-    print(f"Model loaded: {model.config}")
-    print(f"Total parameters: {sum(p.numel() for p in model.parameters()):,}")
-
-    # Setup LoRA if requested
+    # Setup LoRA BEFORE resizing embeddings
     if args.use_lora:
         print(f"\nSetting up LoRA with r={args.lora_r}, alpha={args.lora_alpha}")
         lora_config = LoraConfig(
@@ -219,6 +212,13 @@ def main():
         )
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
+
+    # Resize token embeddings to accommodate new tokens (after LoRA setup)
+    model.resize_token_embeddings(len(tokenizer))
+    print(f"Model embedding layer resized to accommodate new tokens")
+
+    print(f"Model loaded: {model.config if not args.use_lora else model.base_model.config}")
+    print(f"Total parameters: {sum(p.numel() for p in model.parameters()):,}")
 
     # Prepare dataset
     print(f"\nLoading and preprocessing data from: {args.data_path}")
