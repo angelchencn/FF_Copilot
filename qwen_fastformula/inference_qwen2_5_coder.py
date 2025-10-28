@@ -68,7 +68,8 @@ def main():
         args.model_path,
         torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
         trust_remote_code=True,
-        device_map="auto"
+        device_map="auto",
+        ignore_mismatched_sizes=True
     )
     
     if tokenizer.pad_token is None:
