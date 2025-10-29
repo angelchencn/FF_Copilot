@@ -17,6 +17,8 @@ cd deepseek_fastformula
 pip install -r requirements.txt
 ```
 
+python upload_to_hf.py --model_path ./deepseek_coder_fastformula --repo_name angelchencn/deepseek-coder-fastformula
+
 ### Step 2: Start Training
 
 ```bash
@@ -24,23 +26,23 @@ pip install -r requirements.txt
 ./run_training.sh
 
 # Or with custom settings
-./run_training.sh --epochs 5 --batch_size 4 --output_dir ./my_model
+./run_training.sh --epochs 5 --batch_size 4 --output_dir ./deepseek_coder_fastformula
 ```
 
 ### Step 3: Test Your Model
 
 ```bash
 # Interactive mode
-python inference_deepseek_coder.py --model_path ./my_model --interactive
+python inference_deepseek_coder.py --model_path ./deepseek_coder_fastformula --interactive
 
 # Single query
 python inference_deepseek_coder.py \
-    --model_path ./my_model \
+    --model_path ./deepseek_coder_fastformula \
     --query "Write a Fast Formula to calculate overtime pay for hours over 40"
 ```
 
 python inference_deepseek_coder.py \
-    --model_path ./my_model \
+    --model_path ./deepseek_coder_fastformula \
     --query "Write a formula to calculate bonus" \
     --input "Base salary is SALARY, bonus rate is 10%"
 
