@@ -31,13 +31,20 @@ pip install -r requirements.txt
 
 ```bash
 # Interactive mode
-python inference_deepseek_coder.py --model_path ./deepseek_coder_fastformula_output --interactive
+python inference_deepseek_coder.py --model_path ./my_model --interactive
 
 # Single query
 python inference_deepseek_coder.py \
-    --model_path ./deepseek_coder_fastformula_output \
+    --model_path ./my_model \
     --query "Write a Fast Formula to calculate overtime pay for hours over 40"
 ```
+
+python inference_deepseek_coder.py \
+    --model_path ./my_model \
+    --query "Write a formula to calculate bonus" \
+    --input "Base salary is SALARY, bonus rate is 10%"
+
+
 
 ## Training Options
 

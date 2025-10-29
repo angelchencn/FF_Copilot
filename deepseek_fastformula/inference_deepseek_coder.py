@@ -25,18 +25,22 @@ def format_prompt(question, input_context="", use_template=True, template_path="
             # Replace placeholders in template
             prompt = template.replace("{{instruction}}", question)
             prompt = prompt.replace("{{input}}", input_context if input_context else "N/A")
+            # Add a clear marker for where the output should start
+            prompt += "\n\n### Fast Formula Code:\n"
             return prompt
     
     # Fallback to simple format
-    return f"User: {question}\n\nAssistant:"
+    return f"### Instruction:\n{question}\n\n### Response:\n"
 
 
 def generate_response(model, tokenizer, question, input_context="", use_template=True, 
-                      template_path="inference_prompt_template.txt", max_new_tokens=200, 
+                      template_path="inference_prompt_template.txt", max_new_tokens=512, 
                       temperature=0.3, top_p=0.9):
     """Generate a response from the model"""
     # Format the prompt
     prompt = format_prompt(question, input_context, use_template, template_path)
+    
+    print(f"\n[DEBUG] Full prompt:\n{'-'*60}\n{prompt}\n{'-'*60}\n")
     
     # Tokenize
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
@@ -48,24 +52,26 @@ def generate_response(model, tokenizer, question, input_context="", use_template
             max_new_tokens=max_new_tokens,
             temperature=temperature,
             top_p=top_p,
-            repetition_penalty=1.3,
-            no_repeat_ngram_size=4,
+            repetition_penalty=1.2,
+            no_repeat_ngram_size=3,
             pad_token_id=tokenizer.eos_token_id,
-            do_sample=True,
+            do_sample=temperature > 0,
             eos_token_id=tokenizer.eos_token_id
         )
     
-    # Decode response
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    # Decode full response
+    full_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
     
-    # Extract only the output part (remove the prompt)
-    if use_template and "[Expected Output]" in response:
-        # Try to extract content after the template
-        parts = response.split("[Expected Output]")
-        if len(parts) > 1:
-            response = parts[-1].strip()
-    elif "Assistant:" in response:
-        response = response.split("Assistant:")[-1].strip()
+    print(f"\n[DEBUG] Full response:\n{'-'*60}\n{full_response}\n{'-'*60}\n")
+    
+    # Extract only the generated part (after the prompt)
+    response = full_response[len(prompt):].strip()
+    
+    # Clean up the response
+    # Stop at common end markers
+    for stop_marker in ["\n\n###", "\n# ", "User:", "[System", "DEFAULT FOR VAR1", "[Canonical"]:
+        if stop_marker in response:
+            response = response.split(stop_marker)[0].strip()
     
     return response
 
